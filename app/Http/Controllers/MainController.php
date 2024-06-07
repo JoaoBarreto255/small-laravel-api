@@ -8,16 +8,6 @@ use Illuminate\Http\Response;
 class MainController
 {
     use BalanceAwareTrait;
-
-    public function reset(): Response
-    {
-        if ($this->clearBalances()) {
-            return response('OK');
-        }
-
-        return response('FAIL', Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
-
     public function index(Request $request): Response
     {
         if (null === ($id = $request->query->get('account_id'))) {
