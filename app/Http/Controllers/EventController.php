@@ -39,10 +39,6 @@ class EventController extends AbstractController
 
     protected function withdraw(string|int $account, int $outcome): Response
     {
-        if (Response::HTTP_OK !== ($code = $this->validateAccount($account))) {
-            return response('0', $code);
-        }
-
         return response(['origin' => [
             'id' => $account,
             'balance' => $this->bankDataManagerService->decrementBalance($account, $outcome),
@@ -51,10 +47,6 @@ class EventController extends AbstractController
     
     protected function transfer($origin, $destination, $amount): Response
     {
-        if (Response::HTTP_OK !== ($code = $this->validateAccount($origin))) {
-            return response('0', $code);
-        }
-
         return response([
             'origin' => [
                 'id' => $origin,
@@ -67,6 +59,9 @@ class EventController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
+    /**
+     * @deprecated
+     */
     protected function validateAccount($account): int
     {
         if (false !== $this->bankDataManagerService->accountExists($account)) {
