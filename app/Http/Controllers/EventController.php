@@ -13,10 +13,6 @@ class EventController
 
     public function index(Request $request): Response
     {
-        if (!$request->isJson()) {
-            return response('0', Response::HTTP_BAD_REQUEST);
-        }
-
         return match ($request->json('type')) {
             'deposit' => $this->deposity(
                 $request->json('destination'),
@@ -35,31 +31,23 @@ class EventController
         };
     }
 
-    protected function deposity($account, $income): Response
+    protected function deposity(string|int $account, int $income): Response
     {
-        if (Response::HTTP_OK !== $this->validateAccount($account, false) || !is_numeric($income)) {
-            return response('0', Response::HTTP_BAD_REQUEST); 
-        }
-
         return response(['destination' => [
             'id' => $account,
-            'balance' => $this->incrementBalance($account, (int) $income),
+            'balance' => $this->incrementBalance($account, $income),
         ]], Response::HTTP_CREATED);
     }
 
-    protected function withdraw($account, $outcome): Response
+    protected function withdraw(string|int $account, int $outcome): Response
     {
         if (Response::HTTP_OK !== ($code = $this->validateAccount($account))) {
             return response('0', $code);
         }
 
-        if (!is_numeric($outcome)) {
-            return response('0', Response::HTTP_BAD_REQUEST);
-        }
-
         return response(['origin' => [
             'id' => $account,
-            'balance' => $this->decrementBalance($account, (int) $outcome),
+            'balance' => $this->decrementBalance($account, $outcome),
         ]], Response::HTTP_CREATED);
     }
     
@@ -68,14 +56,7 @@ class EventController
         if (Response::HTTP_OK !== ($code = $this->validateAccount($origin))) {
             return response('0', $code);
         }
-        
-        if (Response::HTTP_OK !== ($code = $this->validateAccount($destination, false))) {
-            return response('0', $code);
-        }
-        
-        if (!is_numeric($amount)) {
-            return response('0', Response::HTTP_BAD_REQUEST);
-        }
+
         return response([
             'origin' => [
                 'id' => $origin,
@@ -88,13 +69,9 @@ class EventController
         ], Response::HTTP_CREATED);
     }
 
-    protected function validateAccount($account, bool $checkIsCreated = true): int
+    protected function validateAccount($account): int
     {
-        if (!is_numeric($account) && !is_string($account)) {
-            return Response::HTTP_BAD_REQUEST;
-        }
-
-        if (!$checkIsCreated || false !== $this->getBalance($account)) {
+        if (false !== $this->getBalance($account)) {
             return Response::HTTP_OK;
         }
 
