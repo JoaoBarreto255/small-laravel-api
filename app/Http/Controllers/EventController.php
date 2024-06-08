@@ -7,11 +7,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class MainController
+class EventController
 {
     use BalanceAwareTrait;
 
-    public function event(Request $request): Response
+    public function index(Request $request): Response
     {
         if (!$request->isJson()) {
             return response('0', Response::HTTP_BAD_REQUEST);
