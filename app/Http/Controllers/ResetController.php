@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Response;
 
-class ResetController
+class ResetController extends AbstractController
 {
-    use BalanceAwareTrait;
-    
     public function index(): Response
     {
-        if ($this->clearBalances()) {
+        if ($this->bankDataManagerService->clearBalances()) {
             return response('OK');
         }
 

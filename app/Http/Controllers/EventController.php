@@ -7,10 +7,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class EventController
+class EventController extends AbstractController
 {
-    use BalanceAwareTrait;
-
     public function index(Request $request): Response
     {
         return match ($request->json('type')) {
@@ -35,7 +33,7 @@ class EventController
     {
         return response(['destination' => [
             'id' => $account,
-            'balance' => $this->incrementBalance($account, $income),
+            'balance' => $this->bankDataManagerService->incrementBalance($account, $income),
         ]], Response::HTTP_CREATED);
     }
 
@@ -47,7 +45,7 @@ class EventController
 
         return response(['origin' => [
             'id' => $account,
-            'balance' => $this->decrementBalance($account, $outcome),
+            'balance' => $this->bankDataManagerService->decrementBalance($account, $outcome),
         ]], Response::HTTP_CREATED);
     }
     
@@ -60,18 +58,18 @@ class EventController
         return response([
             'origin' => [
                 'id' => $origin,
-                'balance' => $this->decrementBalance($origin, $amount),
+                'balance' => $this->bankDataManagerService->decrementBalance($origin, $amount),
             ],
             'destination' => [
                 'id' => $destination,
-                'balance' => $this->incrementBalance($destination, $amount),
+                'balance' => $this->bankDataManagerService->incrementBalance($destination, $amount),
             ],
         ], Response::HTTP_CREATED);
     }
 
     protected function validateAccount($account): int
     {
-        if (false !== $this->getBalance($account)) {
+        if (false !== $this->bankDataManagerService->accountExists($account)) {
             return Response::HTTP_OK;
         }
 
