@@ -24,12 +24,15 @@ readonly class EventFilterMissingOriginAccount
             return $next($request);
         }
         
-        return match ($request->json('type')) {
-            'withdraw', 'transfer' => match ($this->bankDataManagerService->accountExists($origin)) {
-                true => $next($request),
-                false => \response('0', Response::HTTP_NOT_FOUND),
-            },
-            default => \response('0', Response::HTTP_BAD_REQUEST),
-        };
+        $type = $request->json('type');
+        if (!in_array($type, ['withdraw', 'transfer'], true)) {
+            return \response('0', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($this->bankDataManagerService->accountExists($origin)) {
+            return $next($request);
+        }
+
+        return \response('0', Response::HTTP_NOT_FOUND);
     }
 }
