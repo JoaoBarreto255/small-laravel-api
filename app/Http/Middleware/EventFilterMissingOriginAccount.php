@@ -20,12 +20,17 @@ readonly class EventFilterMissingOriginAccount
 
     public function handle(Request $request, \Closure $next): Response
     {
-        if (null === ($origin = $request->json('origin'))) {
+        $actionCantHaveOrigin = $this->actionCantHaveOrigin($request->json('type'));
+        $origin = $request->json('origin');
+        if ($actionCantHaveOrigin && null === $origin) {
             return $next($request);
         }
         
-        $type = $request->json('type');
-        if (!in_array($type, ['withdraw', 'transfer'], true)) {
+        if ($actionCantHaveOrigin) {
+            return \response('0', Response::HTTP_BAD_REQUEST);
+        }
+
+        if (empty($origin)) {
             return \response('0', Response::HTTP_BAD_REQUEST);
         }
 
@@ -34,5 +39,10 @@ readonly class EventFilterMissingOriginAccount
         }
 
         return \response('0', Response::HTTP_NOT_FOUND);
+    }
+
+    protected function actionCantHaveOrigin(string $type): bool
+    {
+        return !in_array($type, ['withdraw', 'transfer'], true);
     }
 }
